@@ -1,0 +1,169 @@
+# Single Cell Analysis Pipeline Configuration
+
+# Quality Control Parameters
+qc:
+  # Gene filtering
+  min_genes_per_cell: 200
+  max_genes_per_cell: 6000
+  min_cells_per_gene: 3
+  
+  # Mitochondrial and ribosomal thresholds
+  max_mt_percent: 20
+  max_ribo_percent: 2
+  
+  # Outlier removal
+  n_genes_quantile_upper: 0.98
+  
+  # Ribosomal gene detection
+  ribo_gene_prefixes: ["RPS", "RPL"]
+  mt_gene_prefix: "MT-"
+
+# Doublet Detection Parameters
+doublet:
+  # Solo parameters
+  expected_doublet_rate: 0.06
+  doublet_threshold: 1.0
+  
+# Clustering Parameters
+clustering:
+  # Scanpy clustering
+  n_pcs: 30
+  n_neighbors: 15
+  
+  # Leiden clustering resolutions
+  resolutions: [0.5, 1.0]
+  
+  # UMAP parameters
+  umap_min_dist: 0.3
+  umap_spread: 1.0
+
+# SCVI Integration Parameters
+scvi:
+  # Model architecture
+  n_latent: 30
+  n_layers: 2
+  
+  # Training parameters
+  max_epochs: 400
+  early_stopping: true
+  patience: 10
+  
+  # Batch correction
+  use_batch_correction: true
+  batch_key: "Sample"
+  
+  # Covariates
+  categorical_covariates: ["Sample"]
+  continuous_covariates: ["pct_counts_mt", "total_counts", "pct_counts_ribo"]
+
+# Differential Expression Parameters
+differential_expression:
+  # DE testing
+  min_fold_change: 0.5
+  max_pvalue: 0.05
+  fdr_threshold: 0.05
+  
+  # Gene filtering for DE
+  min_in_group_fraction: 0.25
+  max_out_group_fraction: 0.25
+
+# Cell Type Annotation Parameters
+celltype:
+  # Marker gene matching
+  min_marker_genes: 2
+  marker_expression_threshold: 0.5
+  
+  # Canonical markers (can be overridden per tissue)
+  canonical_markers:
+    T_cells: ["CD3D", "CD3E", "CD2"]
+    B_cells: ["MS4A1", "CD79A", "CD79B"]
+    NK_cells: ["NCAM1", "NKG7", "GNLY"]
+    Monocytes: ["LYZ", "S100A8", "S100A9"]
+    Dendritic: ["FCER1A", "CST3", "ITGAX"]
+    Megakaryocytes: ["PPBP", "PF4", "ITGA2B"]
+    Erythrocytes: ["HBB", "HBA1", "HBA2"]
+    Fibroblasts: ["COL1A1", "COL3A1", "DCN"]
+    Endothelial: ["PECAM1", "VWF", "CDH5"]
+
+# Plotting Parameters
+plotting:
+  # Figure settings
+  figure_dpi: 200
+  figure_format: "png"
+  
+  # Color palettes
+  cluster_colors: "tab20"
+  qc_colors: "viridis"
+  
+  # Plot sizes
+  umap_size: [4, 4]
+  violin_size: [6, 4]
+
+# Output Parameters
+output:
+  # Base output directory
+  base_dir: "Results"
+  
+  # Subdirectories
+  raw_counts_dir: "01_raw_counts"
+  analysis_dir: "02_analysis"
+  reports_dir: "00_reports"
+  
+  # File naming
+  sample_prefix: true
+  timestamp_files: false
+
+# Resource Parameters
+resources:
+  # Default resource allocation
+  default_cpus: 2
+  default_memory: "4 GB"
+  default_time: "2h"
+  
+  # Process-specific overrides
+  process_resources:
+    download_counts:
+      cpus: 1
+      memory: "1 GB"
+      time: "30m"
+    make_adata:
+      cpus: 2
+      memory: "6 GB"
+      time: "2h"
+    solo_doublet:
+      cpus: 6
+      memory: "12 GB"
+      time: "8h"
+    qc_filter:
+      cpus: 2
+      memory: "6 GB"
+      time: "2h"
+    scanpy_cluster:
+      cpus: 4
+      memory: "8 GB"
+      time: "4h"
+    scvi_integrate:
+      cpus: 6
+      memory: "14 GB"
+      time: "10h"
+    scanpy_de_and_plots:
+      cpus: 4
+      memory: "8 GB"
+      time: "4h"
+    celltype_annotate_and_plots:
+      cpus: 2
+      memory: "4 GB"
+      time: "2h"
+
+# Logging Parameters
+logging:
+  # Log levels: DEBUG, INFO, WARNING, ERROR
+  log_level: "INFO"
+  
+  # Log file settings
+  save_logs: true
+  log_file: "pipeline.log"
+  
+  # Progress reporting
+  show_progress: true
+  progress_interval: 10
